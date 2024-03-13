@@ -2,7 +2,6 @@ import numpy as np
 import os
 import torch
 import json
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
 from tqdm.auto import tqdm
 
@@ -124,9 +123,12 @@ def extract_data(read_file='hands_valid.json', two_only=True, one_hot_suits=Fals
 
                 money_features = np.repeat(money_features, num_rounds, axis=0)
 
-                data_list.append(torch.from_numpy(np.concatenate((encoded_board, rounds, p1_actions, p2_actions, money_features,
+                pots = np.array([x['size'] for x in data['pots']]) # encodes pot size per round (so always size 4)
+                pots = (rounds @ pots).reshape(-1,1) # extends this to be one per "turn" instead of once per round
+
+                data_list.append(torch.from_numpy(np.concatenate((encoded_board, pots, rounds, p1_actions, p2_actions, money_features,
                                             repeated_p1_pocket), axis=1)))
-                data_list.append(torch.from_numpy(np.concatenate((encoded_board, rounds, p1_actions, p2_actions, money_features,
+                data_list.append(torch.from_numpy(np.concatenate((encoded_board, pots, rounds, p1_actions, p2_actions, money_features,
                                             repeated_p2_pocket), axis=1)))
                 target_list.append(torch.from_numpy(encoded_p2_pocket))
                 target_list.append(torch.from_numpy(encoded_p1_pocket))
