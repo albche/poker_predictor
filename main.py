@@ -26,18 +26,48 @@ if __name__ == "__main__":
 		config = json.load(config_file)
 
 	# Extract configuration parameters
-	MAX_GENERATION_LENGTH = config["max_generation_length"]
 	TEMPERATURE = config["temperature"]
 	SHOW_HEATMAP = config["show_heatmap"]
-	generated_song_file_path = config["generated_song_file_path"]
 	loss_plot_file_name = config["loss_plot_file_name"]
 	evaluate_model_only = config["evaluate_model_only"]
 	model_path = config["model_path"]
 
 	print('==> Building model..')
 
+	# 17 spaces for each card, max of 5 cards
+	num_board_features = 85
+
+	# 17 spaces for each card, max of 2 cards
+	pocket_cards = 34
+
+	# pre-flop, flop, turn, river
+	num_rounds = 4
+
+	# fold, call, raise
+	num_actions = 3
+	
+	# only considering 2 player games
+	num_players = 2
+
+	# each player has a bankroll and active bet
+	money_per_player = 2
+
+	# pot is common knowledge among players
+	pot = 1
+
+	# 4 rounds, each player can take an action per round: 8 representations of the game
+	max_num_rounds = num_players * num_rounds
+
+	in_size = (
+		(num_board_features * max_num_rounds) + 
+		(pocket_cards * num_players) + 
+		(pot * max_num_rounds) + 
+		(num_rounds * max_num_rounds) + 
+		(num_actions * max_num_rounds * num_players) + 
+		(money_per_player * num_players * max_num_rounds)
+	)
 	out_size = 10 # number of predictions i think?
-	model = Poker_Model(out_size, config)
+	model = Poker_Model(in_size, out_size, config)
 
 	data = load_data()
 	data_val = load_data()
