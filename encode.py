@@ -154,4 +154,4 @@ def extract_data(read_file='hands_valid.json', two_only=True, one_hot_suits=Fals
         torch.save(target_list, os.path.join(out_path, f'target_data_{counter:03}.pt'))
 
 # Run the function
-extract_data(one_hot_suits=True, one_hot_ranks=True)
+# extract_data(one_hot_suits=True, one_hot_ranks=True)

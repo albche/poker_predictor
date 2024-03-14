@@ -21,7 +21,7 @@
 
 	"loss_plot_file_name": "baseline_loss_plot", 
 
-	"evaluate_model_only": true, 
+	"evaluate_model_only": false, 
 
-	"model_path": "./checkpoint/ckpt_mdl_lstm_ep_100_hsize_150_dout_0.1.t20" 
+	"model_path": ""
 }

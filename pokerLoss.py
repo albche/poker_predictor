@@ -3,7 +3,7 @@ import torch
 
 class fourLoss(nn.Module):
     def __init__(self, loss_type):
-        super(fourLoss, self).__init()
+        super(fourLoss, self).__init__()
         self.loss_type = loss_type
 
     def forward(self, y, t):
