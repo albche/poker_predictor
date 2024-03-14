@@ -55,16 +55,13 @@ if __name__ == "__main__":
 	# pot is common knowledge among players
 	pot = 1
 
-	# 4 rounds, each player can take an action per round: 8 representations of the game
-	max_num_rounds = num_players * num_rounds
-
 	in_size = (
-		(num_board_features * max_num_rounds) + 
+		(num_board_features) + 
 		(pocket_cards * num_players) + 
-		(pot * max_num_rounds) + 
-		(num_rounds * max_num_rounds) + 
-		(num_actions * max_num_rounds * num_players) + 
-		(money_per_player * num_players * max_num_rounds)
+		(pot) + 
+		(num_rounds) + 
+		(num_actions * num_players) + 
+		(money_per_player * num_players)
 	)
 	out_size = 10 # number of predictions i think?
 	model = Poker_Model(in_size, out_size, config)
