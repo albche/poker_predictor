@@ -1,17 +1,12 @@
-from util import *
-from constants import *
-from SongRNN import *
 import torch
 from train import *
-from generate import *
 import json
 import argparse
 import gc
-
-with open(INPUT_TRAIN_PATH, 'r') as f:
-    char_set = sorted(set(f.read()))
-
-char_idx_map = {character: index for index, character in enumerate(char_set)}
+from model import Poker_Model
+from util import plot_losses
+from train import train
+from dataloader import load_data
 
 # TODO determine which device to use (cuda or cpu)
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -39,15 +34,15 @@ if __name__ == "__main__":
 	evaluate_model_only = config["evaluate_model_only"]
 	model_path = config["model_path"]
 
-	# Load training and validation data
-	data = load_data(INPUT_TRAIN_PATH, config)
-	data_val = load_data(INPUT_VAL_PATH, config)
-
 	print('==> Building model..')
 
-	in_size, out_size = len(char_set), len(char_set)
-	# Initialize the SongRNN model
-	model = SongRNN(in_size, out_size, config)
+	out_size = 10 # number of predictions i think?
+	model = Poker_Model(out_size, config)
+
+	data = load_data()
+	data_val = load_data()
+	targets = None
+	targets_val = None
 
 	# If evaluating model only and trained model path is provided:
 	if(evaluate_model_only and model_path != ""):
@@ -59,27 +54,10 @@ if __name__ == "__main__":
 		print('==> Model loaded from checkpoint..')
 	else:
 		# Train the model and get the training and validation losses
-		losses, v_losses = train(model, data, data_val, char_idx_map, config, device)
+		losses, v_losses = train(model, data, data_val, targets, targets_val, config, device)
 
 		# Plot the training and validation losses
-		plot_losses(losses, v_losses, loss_plot_file_name)
-
-	# As a fun exercise, after your model is well-trained you can see how the model extends Beethoven's famous fur-elise tune 
-	# with open("./data/fur_elise.txt", 'r') as file:
-	#	prime_str = file.read()
-	# print("Prime str = ", prime_str)
-
-	prime_str = '<start>'
-
-	# Generate a song using the trained model
-	generated_song = generate_song(model, device, char_idx_map, max_len=MAX_GENERATION_LENGTH, temp=TEMPERATURE, 
-									prime_str=prime_str, show_heatmap=SHOW_HEATMAP)
-
-	# Write the generated song to a file
-	with open(generated_song_file_path, "w") as file:
-		file.write(generated_song)
-
-	print("Generated song is written to : ", generated_song_file_path)
+		plot_losses(losses, v_losses)
 
 	# housekeeping
 	gc.collect()

@@ -4,9 +4,9 @@ import torch
 class fourLoss(nn.Module):
     def __init__(self, loss_type):
         super(fourLoss, self).__init()
-
         self.loss_type = loss_type
-    def forward(y, t):
+
+    def forward(self, y, t):
         '''
         y: model generated output shape: (34) i.e. [rank1 + suit1 + rank2 + suit2] where each element is a one-hot encoded representation of a card
         t: target value shape: (34) i.e. [rank1 + suit1 + rank2 + suit2] where each element is a one-hot encoded representation of a card
