@@ -1,24 +1,29 @@
-
+from encode import *
 from train import *
-from dataLoader import *
 import torch.optim as optim
 import torch.nn as nn
 import sys
 import os
 
 
-def train(model, data, data_val, char_idx_map, config, device):
+###NOTES:
+# - work out the Loss class with a string input that gives the type of loss being used
+
+
+def train(model, data, data_val, targets, targets_val, config, device, loss_func):
 
 	"""
     Train the provided model using the specified configuration and data.
 
     Parameters:
     - model (nn.Module): The neural network model to be trained
-    - data (list): A list of training data sequences
-    - data_val (list): A list of validation data sequences
-    - char_idx_map (dict): A dictionary mapping characters to their corresponding indices
+    - data (list): A list of encoded training data sequences
+    - data_val (list): A list of encoded validation data sequences
+    - targets (list): A list of encoded targets for every pattern of training data
+	- targets_val (list): A list of encoded targets for every pattern of validation data
     - config (dict): A dictionary containing configuration parameters for training:
     - device (torch.device): The device (e.g., "cpu" or "cuda") on which the model is located
+	- loss (string): the type of loss function being used for training and validation
 
     Returns:
     - losses (list): A list containing training losses for each epoch
@@ -39,7 +44,7 @@ def train(model, data, data_val, char_idx_map, config, device):
 
 	optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
 
-	ce_loss = torch.nn.CrossEntropyLoss() # TODO: Initialize loss function
+	loss = loss_func # TODO: Initialize loss function
 
 	# Lists to store training and validation losses over the epochs
 	train_losses, validation_losses = [], []
@@ -71,22 +76,25 @@ def train(model, data, data_val, char_idx_map, config, device):
 			model.zero_grad()   # Zero out the gradient
 
 			#TODO: Finish next steps here
-			seq, target = get_random_song_sequence_target(data[i], char_idx_map, SEQ_SIZE)
-			seq.to(device)
-			target.to(device)
+
+            seq = torch.t(data[i])
+            target = targets[i]
+            seq.to(device)
+            targets.to(device)
+
 
 			seq_loss = 0
 			output = []
 			for c in range(len(seq)):
 				if device == "cuda":
 					inp = seq[c].cuda()
-					tar = torch.nn.functional.one_hot(target[c], len(char_idx_map)).cuda()
+					tar = target.cuda()
 				else:
 					inp = seq[c]
-					tar = torch.nn.functional.one_hot(target[c], len(char_idx_map))
-				output_char = model.forward(inp)
-				output.append(output_char)
-				seq_loss += ce_loss(output_char, tar.type(torch.float32))
+					tar = target
+				output_card = model.forward(inp)
+				output.append(output_card)
+				seq_loss += loss(output_card, tar)
 
 			seq_loss.backward()
 			optimizer.step()
@@ -124,18 +132,21 @@ def train(model, data, data_val, char_idx_map, config, device):
 				model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
 
 				#TODO: Finish next steps here
-				seq, target = get_random_song_sequence_target(data_val[i], char_idx_map, SEQ_SIZE)
+				seq = torch.t(data[i])
+                target = targets[i]
+                seq.to(device)
+                targets.to(device)
 
 				seq_loss = 0
 				for c in range(len(seq)):
 					if device == "cuda":
 						inp = seq[c].cuda()
-						tar = torch.nn.functional.one_hot(target[c], len(char_idx_map)).cuda()
+						tar = target.cuda()
 					else:
 						inp = seq[c]
-						tar = torch.nn.functional.one_hot(target[c], len(char_idx_map))
+						tar = target
 					output = model.forward(inp)
-					seq_loss += ce_loss(output, tar.type(torch.float32))
+					seq_loss += loss(output, tar)
 
 				avg_loss_per_sequence += seq_loss/len(seq)
 
