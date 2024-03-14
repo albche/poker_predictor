@@ -1,5 +1,5 @@
 from encode import *
-from train import *
+from pokerLoss import *
 import torch.optim as optim
 import torch.nn as nn
 import sys
@@ -10,7 +10,7 @@ import os
 # - work out the Loss class with a string input that gives the type of loss being used
 
 
-def train(model, data, data_val, targets, targets_val, config, device, loss_func):
+def train(model, data, data_val, targets, targets_val, config, device, loss_type="loss 1"):
 
 	"""
     Train the provided model using the specified configuration and data.
@@ -44,7 +44,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_func
 
 	optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
 
-	loss = loss_func # TODO: Initialize loss function
+	loss = fourLoss(loss_type) # TODO: Initialize loss function
 
 	# Lists to store training and validation losses over the epochs
 	train_losses, validation_losses = [], []
