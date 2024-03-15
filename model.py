@@ -3,45 +3,24 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 class Poker_Model(nn.Module):
-    def __init__(self, input_size, output_size, config):
+    def __init__(self, input_size, output_size):
         """
         Initialize the LSTM model.
         """
         super(Poker_Model, self).__init__()
 
-        HIDDEN_SIZE = config["hidden_size"]
-        NUM_LAYERS = config["no_layers"]
-        MODEL_TYPE = config["model_type"]
-        DROPOUT_P = config["dropout"]
-
-        self.model_type = MODEL_TYPE
         self.input_size = input_size
-        self.hidden_size = HIDDEN_SIZE
+        self.hidden_size = 150
         self.output_size = output_size
-        self.num_layers = NUM_LAYERS
-        self.dropout = DROPOUT_P
+        self.num_layers = 3
+        self.dropout = 0.2
         self.hidden = None
         self.cell = None
-        # self.device = "cuda" if torch.cuda.is_available() else "cpu"
-
         
-        """
-        Complete the code
+        self.recurrent = torch.nn.LSTM(input_size, self.hidden_size, self.num_layers)
 
-        TODO: 
-        (i) Initialize embedding layer with input_size and hidden_size
-        (ii) Initialize the recurrent layer based on model type (i.e., LSTM or RNN) using hidden size and num_layers
-        (iii) Initialize linear output layer using hidden size and output size
-        (iv) Initialize dropout layer with dropout probability
-        """
-        # self.embedding = torch.nn.Embedding(input_size, HIDDEN_SIZE)
-
-        self.recurrent = None
-        if MODEL_TYPE == "lstm":
-            self.recurrent = torch.nn.LSTM(input_size, HIDDEN_SIZE, NUM_LAYERS)
-
-        self.linear = torch.nn.Linear(HIDDEN_SIZE, output_size)
-        self.dropout = torch.nn.Dropout(DROPOUT_P)
+        self.linear = torch.nn.Linear(self.hidden_size, output_size)
+        self.dropout = torch.nn.Dropout(self.dropout)
 
 
         
@@ -56,7 +35,7 @@ class Poker_Model(nn.Module):
 
         Initialise with zeros.
         """
-        self.hidden = torch.randn((self.num_layers, self.hidden_size)).to(device)
+        self.hidden = torch.zeros((self.num_layers, self.hidden_size)).to(device)
         self.cell = torch.zeros(self.num_layers, self.hidden_size).to(device)
         
     def forward(self, seq):

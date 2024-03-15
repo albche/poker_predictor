@@ -22,8 +22,11 @@ class fourLoss(nn.Module):
             
             loss1 = ce(y1_r, t1_r) + ce(y1_s, t1_s) + ce(y2_r, t2_r) + ce(y2_s, t2_s)
             loss2 = ce(y2_r, t1_r) + ce(y2_s, t1_s) + ce(y1_r, t2_r) + ce(y1_s, t2_s)
+            # loss1 = [ce(y1_r, t1_r), ce(y1_s, t1_s), ce(y2_r, t2_r), ce(y2_s, t2_s)]
+            # loss2 = [ce(y2_r, t1_r), ce(y2_s, t1_s), ce(y1_r, t2_r), ce(y1_s, t2_s)]
 
-            return min(loss1, loss2)
+            return min(loss1/4, loss2/4)
+            # return loss1 if sum(loss1) < sum(loss2) else loss2
     
 #testing
 

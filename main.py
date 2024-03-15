@@ -64,10 +64,11 @@ if __name__ == "__main__":
         (money_per_player * num_players)
     )
     out_size = 34 # number of predictions i think?
-    model = Poker_Model(in_size, out_size, config)
+    model = Poker_Model(in_size, out_size)
 
-    data, targets = load_data()
-    data_val, targets_val = load_data(mode='validation')
+    data_p = 0.05 #percentage of data loaded because running everything takes too long (min, max) = (0.05, 1.0)
+    data, targets = load_data(p=data_p)
+    data_val, targets_val = load_data(mode='validation', p=data_p)
 
     # If evaluating model only and trained model path is provided:
     if(evaluate_model_only and model_path != ""):

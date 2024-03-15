@@ -3,16 +3,32 @@ import numpy as np
 import torch
 from tqdm.auto import tqdm
 
-def load_data(mode='training'):
+def load_data(mode='training', p=1.0):
     input_glob, target_glob = f'data/{mode}/input*.pt', f'data/{mode}/target*.pt'
+
+    assert(p >= 0.05 and p <= 1.0) #smallest value allowed for p is 0.05 since validation doesn't have enough data to support less
+
     input_fns = np.sort(glob.glob(input_glob))
     target_fns = np.sort(glob.glob(target_glob))
+    inputIndices = torch.randperm(len(input_fns))[:round(len(input_fns)*p)]
+    targetIndices = torch.randperm(len(target_fns))[:round(len(target_fns)*p)]
+    input_fns = input_fns[inputIndices]
+    target_fns = target_fns[targetIndices]
+
+    #in case theres only one element and it becomes a string
+    if type(input_fns) == np.str_: 
+        input_fns = np.array([input_fns])
+    if type(target_fns) == np.str_: 
+        target_fns = np.array([target_fns])
+
     all_inputs = []
     all_targets = []
+
     print(f'Loading {mode} Inputs...')
     for fn in tqdm(input_fns):
         all_inputs += torch.load(fn)
     print(f'Loading {mode} Targets...')
     for fn in tqdm(target_fns):
         all_targets += torch.load(fn)
+    
     return all_inputs, all_targets
