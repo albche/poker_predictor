@@ -74,8 +74,10 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
 
             #TODO: Finish next steps here
             seq = torch.t(data[i]).t()
+            seq = seq.float() # For some reason the data is being saved/read as float64, but we need it as float32
             target = targets[i]
-            seq.to(device)
+            target = target.float()
+            seq = seq.to(device)
             target.to(device)
 
             seq_loss = 0

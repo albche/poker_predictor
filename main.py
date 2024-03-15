@@ -38,26 +38,26 @@ if __name__ == "__main__":
     num_board_features = 85
 
     # 17 spaces for each card, max of 2 cards
-    pocket_cards = 34
+    pocket_cards = 17*2
 
     # pre-flop, flop, turn, river
     num_rounds = 4
 
     # fold, call, raise
-    num_actions = 3
+    num_actions = 10
     
     # only considering 2 player games
     num_players = 2
 
     # each player has a bankroll and active bet
-    money_per_player = 2
+    money_per_player = 3
 
     # pot is common knowledge among players
     pot = 1
 
     in_size = (
         (num_board_features) + 
-        (pocket_cards * num_players) + 
+        (pocket_cards) + 
         (pot) + 
         (num_rounds) + 
         (num_actions * num_players) + 

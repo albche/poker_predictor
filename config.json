@@ -5,7 +5,7 @@
 	
 	"no_epochs": 100, 
 	
-	"no_layers": 1,
+	"no_layers": 3,
 
 	"hidden_size": 150, 
 

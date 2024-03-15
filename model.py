@@ -34,11 +34,11 @@ class Poker_Model(nn.Module):
         (iii) Initialize linear output layer using hidden size and output size
         (iv) Initialize dropout layer with dropout probability
         """
-        self.embedding = torch.nn.Embedding(input_size, HIDDEN_SIZE)
+        # self.embedding = torch.nn.Embedding(input_size, HIDDEN_SIZE)
 
         self.recurrent = None
         if MODEL_TYPE == "lstm":
-            self.recurrent = torch.nn.LSTM(HIDDEN_SIZE, HIDDEN_SIZE, NUM_LAYERS)
+            self.recurrent = torch.nn.LSTM(input_size, HIDDEN_SIZE, NUM_LAYERS)
 
         self.linear = torch.nn.Linear(HIDDEN_SIZE, output_size)
         self.dropout = torch.nn.Dropout(DROPOUT_P)
@@ -76,7 +76,7 @@ class Poker_Model(nn.Module):
         (iii) Apply dropout (if needed)
         (iv) Pass through the linear output layer
         """
-        x1 = self.embedding(seq)
-        output, (self.hidden, self.cell) = self.recurrent(x1.unsqueeze(dim=0), (self.hidden, self.cell)) #layers are the values of the hidden and cell states
+        # x1 = self.embedding(seq)
+        output, (self.hidden, self.cell) = self.recurrent(seq.unsqueeze(0), (self.hidden, self.cell)) #layers are the values of the hidden and cell states
         x3 = self.dropout(output)
         return self.linear(x3.squeeze())
