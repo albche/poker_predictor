@@ -40,6 +40,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     model = model.to(device) # TODO: Move model to the specified device
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
 
     loss = fourLoss(loss_type) # TODO: Initialize loss function
 
@@ -72,17 +73,14 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
             model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
             model.zero_grad()   # Zero out the gradient
 
-            #TODO: Finish next steps here
-            seq = torch.t(data[i]).t()
-            seq = seq.float() # For some reason the data is being saved/read as float64, but we need it as float32
-            target = targets[i]
-            target = target.float()
+            seq = torch.t(data[i]).t().float() # Needs a transpose. float() turns float64 -> float32, which we need
+            target = targets[i].view(34).float() # Fixing dimensionality with view (maybe get rid of magic num. l8r)
             seq = seq.to(device)
             target.to(device)
 
             seq_loss = 0
             output = []
-            for c in range(seq.shape[0]):
+            for c in range(seq.shape[0]): # For each column...
                 if device == "cuda":
                     inp = seq[c].cuda()
                     tar = target.cuda()
@@ -91,12 +89,12 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                     tar = target
 
                 output_card = model.forward(inp)
-                output.append(output_card)
-                seq_loss += loss(output_card, tar)
-
-            seq_loss.backward()
-            optimizer.step()
-            avg_loss_per_sequence += seq_loss/len(seq)
+                output.append(output_card) 
+                seq_loss += loss(output_card, tar) # Calculate loss
+            seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
+            optimizer.step() # optimizer
+            scheduler.step()
+            avg_loss_per_sequence += seq_loss/len(seq) 
 
             # Display progress
             msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/len(data)*100, i, seq_loss/len(seq))

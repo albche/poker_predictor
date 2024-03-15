@@ -56,7 +56,7 @@ class Poker_Model(nn.Module):
 
         Initialise with zeros.
         """
-        self.hidden = torch.randn(self.hidden_size).unsqueeze(dim=0).to(device)
+        self.hidden = torch.randn((self.num_layers, self.hidden_size)).to(device)
         self.cell = torch.zeros(self.num_layers, self.hidden_size).to(device)
         
     def forward(self, seq):
