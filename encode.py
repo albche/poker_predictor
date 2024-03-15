@@ -10,43 +10,43 @@ READ_FILE = 'hands_valid.json'
 RANKMAP = {'A':1, 'T':10, 'J':11, 'Q':12, 'K':13}
 SUITMAP = {'c':1, 'd':2, 'h':3, 's':4}
 
-def encode_hand(card_list, one_hot_suits=False, one_hot_ranks=False):
-    """
-    Converts a list of cards in string format to an encoding
+# def encode_hand(card_list, one_hot_suits=False, one_hot_ranks=False):
+#     """
+#     Converts a list of cards in string format to an encoding
     
-    parameters:
-    card_list: list of strings
-    one_hot_suits: false to encode cards densely but numerically, true to one-hot encode (sparse)
-    one_hot_ranks: same as suits
+#     parameters:
+#     card_list: list of strings
+#     one_hot_suits: false to encode cards densely but numerically, true to one-hot encode (sparse)
+#     one_hot_ranks: same as suits
 
-    returns:
-    a matrix of integers where each row represents one card, encoded as specified via parameters
-    """
-    rank_list = [card[0] for card in card_list]
-    suit_list = [card[1] for card in card_list]
+#     returns:
+#     a matrix of integers where each row represents one card, encoded as specified via parameters
+#     """
+#     rank_list = [card[0] for card in card_list]
+#     suit_list = [card[1] for card in card_list]
     
-    def encode_rank_OHE(ranks):
-        encoder = OneHotEncoder(categories=([['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T','J','Q','K']]))
-        return encoder.fit_transform(np.array(ranks).reshape(-1,1)).toarray()
-    def encode_suit_OHE(suits):
-        encoder = OneHotEncoder(categories=([['c','d','h','s']]))
-        return encoder.fit_transform(np.array(suits).reshape(-1,1)).toarray()
-    def encode_rank_numerical(ranks):
-        return np.vectorize(lambda x: x if x not in RANKMAP.keys() else RANKMAP[x])(np.array(ranks)).reshape(-1,1)
-    def encode_suit_numerical(suits):
-        return np.vectorize(lambda x: SUITMAP[x])(np.array(suits)).reshape(-1,1)
+#     def encode_rank_OHE(ranks):
+#         encoder = OneHotEncoder(categories=([['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T','J','Q','K']]))
+#         return encoder.fit_transform(np.array(ranks).reshape(-1,1)).toarray()
+#     def encode_suit_OHE(suits):
+#         encoder = OneHotEncoder(categories=([['c','d','h','s']]))
+#         return encoder.fit_transform(np.array(suits).reshape(-1,1)).toarray()
+#     def encode_rank_numerical(ranks):
+#         return np.vectorize(lambda x: x if x not in RANKMAP.keys() else RANKMAP[x])(np.array(ranks)).reshape(-1,1)
+#     def encode_suit_numerical(suits):
+#         return np.vectorize(lambda x: SUITMAP[x])(np.array(suits)).reshape(-1,1)
     
-    if(one_hot_ranks):
-        encoded_ranks = encode_rank_OHE(rank_list).astype(int)
-    else:
-        encoded_ranks = encode_rank_numerical(rank_list).astype(int)
+#     if(one_hot_ranks):
+#         encoded_ranks = encode_rank_OHE(rank_list).astype(int)
+#     else:
+#         encoded_ranks = encode_rank_numerical(rank_list).astype(int)
 
-    if(one_hot_suits):
-        encoded_suits = encode_suit_OHE(suit_list).astype(int)
-    else:
-        encoded_suits = encode_suit_numerical(suit_list).astype(int)
+#     if(one_hot_suits):
+#         encoded_suits = encode_suit_OHE(suit_list).astype(int)
+#     else:
+#         encoded_suits = encode_suit_numerical(suit_list).astype(int)
 
-    return np.concatenate((encoded_ranks, encoded_suits), axis=1)
+#     return np.concatenate((encoded_ranks, encoded_suits), axis=1)
 
 def encode_board(card_list, rounds, one_hot_ranks=False, one_hot_suits=False):
     '''
@@ -77,6 +77,20 @@ def encode_board(card_list, rounds, one_hot_ranks=False, one_hot_suits=False):
         else:
             board_list.append(full_board.flatten().reshape(-1,1))
     return np.concatenate(board_list, axis=1)
+
+def encode_hand(card_list):
+    # Define all possible cards in a sorted order
+    suits = 'cdhs'  # clubs, diamonds, hearts, spades
+    ranks = 'A23456789TJQK'
+    all_cards = [rank + suit for rank in ranks for suit in suits]
+    one_hot_vector = np.zeros(shape=(len(card_list), 52))
+    for i in range(len(card_list)):
+        # Find the index of the card in all_cards and set the corresponding position in one_hot_vector to 1
+        index = all_cards.index(card_list[i])
+        one_hot_vector[i,index] = 1
+
+    return np.concatenate(one_hot_vector, axis=0)
+
 
 def encode_bets(bets):
     '''
