@@ -38,7 +38,7 @@ if __name__ == "__main__":
     num_board_features = 85
 
     # 17 spaces for each card, max of 2 cards
-    pocket_cards = 17*2
+    pocket_cards = 52*2
 
     # pre-flop, flop, turn, river
     num_rounds = 4
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         (num_actions * num_players) + 
         (money_per_player * num_players)
     )
-    out_size = 34 # number of predictions i think?
+    out_size = 104 # number of predictions i think?
     model = Poker_Model(in_size, out_size)
 
     data_p = 0.05 #percentage of data loaded because running everything takes too long (min, max) = (0.05, 1.0)

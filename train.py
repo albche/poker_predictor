@@ -12,7 +12,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     N_EPOCHS = 10
     LR = 0.01
     SAVE_EVERY = 5
-    HIDDEN_SIZE = 150
+    HIDDEN_SIZE = 50
     DROPOUT_P = 0.2
     CHECKPOINT = 'ckpt_ep_{}_hsize_{}_dout_{}'.format(N_EPOCHS, HIDDEN_SIZE, DROPOUT_P)
     DATA_P = 0.1
@@ -37,7 +37,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
             model.zero_grad()   # Zero out the gradient
 
             seq = torch.t(data[i]).t().float() # Needs a transpose. float() turns float64 -> float32, which we need
-            target = targets[i].view(34).float() # Fixing dimensionality with view (maybe get rid of magic num. l8r)
+            target = targets[i].view(104).float() # Fixing dimensionality with view (maybe get rid of magic num. l8r)
             seq = seq.to(device)
             target = target.to(device)
 
@@ -75,24 +75,10 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
             avg_loss_per_sequence = 0
             # Iterate over validation data
             for i in range(round(len(data_val)*DATA_P)):
-                '''
-                TODO: 
-                    - For each song:
-                        - Zero out/Re-initialise the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.) (Done for you)
-                        - Get a random sequence of length: SEQ_SIZE from each song- Get a random sequence of length: SEQ_SIZE from each song (check util.py)
-                        - Iterate over sequence characters : 
-                            - Transfer the input and the corresponding ground truth to the same device as the model's
-                            - Do a forward pass through the model
-                            - Calculate loss per character of sequence
-                        - Calculate avg loss for the sequence
-                    - Calculate avg loss for the validation dataset 
-                '''
-
                 model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
 
-                #TODO: Finish next steps here
-                seq = torch.t(data[i]).t().float()
-                target = targets[i].view(34).float()
+                seq = torch.t(data_val[i]).t().float()
+                target = targets_val[i].view(104).float()
                 seq.to(device)
                 target.to(device)
 

@@ -48,7 +48,7 @@ SUITMAP = {'c':1, 'd':2, 'h':3, 's':4}
 
 #     return np.concatenate((encoded_ranks, encoded_suits), axis=1)
 
-def encode_board(card_list, rounds, one_hot_ranks=False, one_hot_suits=False):
+def encode_board(card_list, rounds):
     '''
     Returns an encoding of the board that hides cards that the dealer hasn't revealed yet
 
@@ -61,7 +61,7 @@ def encode_board(card_list, rounds, one_hot_ranks=False, one_hot_suits=False):
     submatrix ready to be added to the overall encoding. Number of rows depends on embedding choice, number of columns
     equal to the number of rounds
     '''
-    full_board = encode_hand(card_list, one_hot_ranks=one_hot_ranks, one_hot_suits=one_hot_suits)
+    full_board = encode_hand(card_list)
     board_list = []
     for round in rounds:
         if(round[0] == 1):
@@ -125,14 +125,14 @@ def extract_data(read_file='hands_valid.json', two_only=True, one_hot_suits=Fals
                 _, p2_actions = encode_bets(p2_bets)
                 num_rounds = rounds.shape[0]
 
-                encoded_board = (encode_board(data['board'], rounds, one_hot_ranks=one_hot_ranks, one_hot_suits=one_hot_suits)).T
+                encoded_board = (encode_board(data['board'], rounds)).T
 
                 money_features = np.array([data['players'][player][feature] for feature in ['bankroll', 'action', 'winnings'] 
                                         for player in [0,1]]).reshape(6, 1).T
 
-                encoded_p1_pocket = encode_hand(data['players'][0]['pocket_cards'], one_hot_ranks=one_hot_ranks, one_hot_suits=one_hot_suits).flatten().reshape(1,-1)
+                encoded_p1_pocket = encode_hand(data['players'][0]['pocket_cards']).flatten().reshape(1,-1)
                 repeated_p1_pocket = np.repeat(encoded_p1_pocket, num_rounds, axis=0)
-                encoded_p2_pocket = encode_hand(data['players'][1]['pocket_cards'], one_hot_ranks=one_hot_ranks, one_hot_suits=one_hot_suits).flatten().reshape(1,-1)
+                encoded_p2_pocket = encode_hand(data['players'][1]['pocket_cards']).flatten().reshape(1,-1)
                 repeated_p2_pocket = np.repeat(encoded_p2_pocket, num_rounds, axis=0)
 
                 money_features = np.repeat(money_features, num_rounds, axis=0)
@@ -170,4 +170,4 @@ def extract_data(read_file='hands_valid.json', two_only=True, one_hot_suits=Fals
         torch.save(target_list, os.path.join(out_path, f'target_data_{counter:03}.pt'))
 
 # Run the function
-# extract_data(one_hot_suits=True, one_hot_ranks=True)
+extract_data(one_hot_suits=True, one_hot_ranks=True)
