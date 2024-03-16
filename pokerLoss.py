@@ -12,11 +12,15 @@ class fourLoss(nn.Module):
         t: target value shape: (104) i.e. [card1 + card2] where each element is a one-hot encoded representation of a card
         '''
         ce = nn.CrossEntropyLoss()
+        yc1, yc2 = y[:52], y[52:]
+        tc1, tc2 = t[:52], t[52:]
+        loss1 = (ce(yc1, tc1) + ce(yc2, tc2))/2
+        loss2 = (ce(yc1, tc2) + ce(yc2, tc1))/2
 
-        loss1 = ce(y[0], t[0]) + ce(y[1], t[1])
-        loss2 = ce(y[1], t[0]) + ce(y[0], t[1])
+        # loss1 = ce(y[0], t[0]) + ce(y[1], t[1])
+        # loss2 = ce(y[1], t[0]) + ce(y[0], t[1])
 
-        return min(loss1/2, loss2/2)
+        return min(loss1, loss2)
 
 
         # '''

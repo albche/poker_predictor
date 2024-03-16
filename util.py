@@ -7,3 +7,4 @@ def plot_losses(training_losses, validation_losses):
     plt.ylabel('Loss')
     plt.title('Loss per Epoch')
     plt.legend()
+    plt.savefig('outputs/loss.png')

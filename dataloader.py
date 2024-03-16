@@ -3,8 +3,8 @@ import numpy as np
 import torch
 from tqdm.auto import tqdm
 
-def load_data(mode='training', p=1.0):
-    input_glob, target_glob = f'data/{mode}/input*.pt', f'data/{mode}/target*.pt'
+def load_data(encodings='fully_encoded', mode='training', p=1.0):
+    input_glob, target_glob = f'data/{encodings}/{mode}/input*.pt', f'data/{encodings}/{mode}/target*.pt'
 
     assert(p >= 0.05 and p <= 1.0) #smallest value allowed for p is 0.05 since validation doesn't have enough data to support less
 

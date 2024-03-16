@@ -9,7 +9,7 @@ import os
 
 def train(model, data, data_val, targets, targets_val, config, device, loss_type="loss 1"):
     # Extracting configuration parameters
-    N_EPOCHS = 10
+    N_EPOCHS = 20
     LR = 0.01
     SAVE_EVERY = 5
     HIDDEN_SIZE = 50
@@ -54,10 +54,14 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                 output_card = model.forward(inp)
                 output.append(output_card) 
                 seq_loss += loss(output_card, tar)
+                tar_c_1, tar_c_2 = torch.argmax(tar[:52]), torch.argmax(tar[52:])
+                card_c_1, card_c_2 = torch.argmax(output_card[:52]), torch.argmax(output_card[52:])
+                
             seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
             optimizer.step() # optimizer
             scheduler.step()
             avg_loss_per_sequence += seq_loss.item()/len(seq) 
+
 
             # Display progress
             msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data)*DATA_P)*100, i, seq_loss.item()/len(seq))

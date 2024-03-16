@@ -35,7 +35,7 @@ if __name__ == "__main__":
     print('==> Building model..')
 
     # 17 spaces for each card, max of 5 cards
-    num_board_features = 85
+    num_board_features = 52*5
 
     # 17 spaces for each card, max of 2 cards
     pocket_cards = 52*2
