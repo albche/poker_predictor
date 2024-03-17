@@ -10,12 +10,12 @@ class Poker_Model(nn.Module):
         super(Poker_Model, self).__init__()
 
         self.input_size = input_size
-        self.hidden_size = 150
+        self.hidden_size = output_size*3
         self.output_size = output_size
         self.num_layers = 3
-        self.dropout = 0.3
+        self.dropout = 0.1
         self.hidden = None
-        self.cell = None
+        # self.cell = None
         
         # self.recurrent = torch.nn.LSTM(input_size, self.hidden_size, self.num_layers)
         self.recurrent = torch.nn.GRU(input_size, self.hidden_size, self.num_layers)
@@ -38,7 +38,7 @@ class Poker_Model(nn.Module):
         Initialise with zeros.
         """
         self.hidden = torch.zeros((self.num_layers, self.hidden_size)).to(device)
-        self.cell = torch.zeros(self.num_layers, self.hidden_size).to(device)
+        # self.cell = torch.zeros(self.num_layers, self.hidden_size).to(device)
         
     def forward(self, seq):
         """
@@ -60,6 +60,7 @@ class Poker_Model(nn.Module):
         # x1 = self.embedding(seq)
         # output, (self.hidden, self.cell) = self.recurrent(seq.unsqueeze(0), (self.hidden, self.cell)) #layers are the values of the hidden and cell states
         output, (self.hidden) = self.recurrent(seq.unsqueeze(0), (self.hidden)) #layers are the values of the hidden and cell states
-        x3 = self.dropout(output)
-        return self.linear(x3.squeeze())
+        x = self.dropout(output)
+        x = self.linear(x.squeeze())
+        return x
 
