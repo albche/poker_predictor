@@ -4,7 +4,7 @@ import json
 import argparse
 import gc
 from model import Poker_Model
-from util import plot_losses
+from util import *
 from train import train
 from dataloader import load_data
 
@@ -79,10 +79,11 @@ if __name__ == "__main__":
         print('==> Model loaded from checkpoint..')
     else:
         # Train the model and get the training and validation losses
-        losses, v_losses = train(model, data, data_val, targets, targets_val, config, device)
+        losses, v_losses, accs, v_accs = train(model, data, data_val, targets, targets_val, config, device)
 
         # Plot the training and validation losses
         plot_losses(losses, v_losses)
+        plot_accs(accs, v_accs)
 
     # housekeeping
     gc.collect()

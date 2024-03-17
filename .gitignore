@@ -1,4 +1,5 @@
-data/fully_encoded/*/*
+data/*
+outputs/*
 hands_valid.json
 test_notebook.ipynb
 analysis.ipynb
