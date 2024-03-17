@@ -10,10 +10,9 @@ def load_data(encodings='fully_encoded', mode='training', p=1.0):
 
     input_fns = np.sort(glob.glob(input_glob))
     target_fns = np.sort(glob.glob(target_glob))
-    inputIndices = torch.randperm(len(input_fns))[:round(len(input_fns)*p)]
-    targetIndices = torch.randperm(len(target_fns))[:round(len(target_fns)*p)]
-    input_fns = input_fns[inputIndices]
-    target_fns = target_fns[targetIndices]
+    indices = torch.randperm(len(input_fns))[:round(len(input_fns)*p)]
+    input_fns = input_fns[:round(len(input_fns)*p)]
+    target_fns = target_fns[:round(len(target_fns)*p)]
 
     #in case theres only one element and it becomes a string
     if type(input_fns) == np.str_: 

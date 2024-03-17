@@ -10,7 +10,7 @@ import os
 def train(model, data, data_val, targets, targets_val, config, device, loss_type="loss 1"):
     # Extracting configuration parameters
     N_EPOCHS = 20
-    LR = 0.01
+    LR = 0.001
     SAVE_EVERY = 5
     HIDDEN_SIZE = 50
     DROPOUT_P = 0.2
