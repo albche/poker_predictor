@@ -18,7 +18,7 @@ class Poker_Model(nn.Module):
         self.cell = None
         
         # self.recurrent = torch.nn.LSTM(input_size, self.hidden_size, self.num_layers)
-        self.recurrent = torch.nn.GRU(input_size, self.hidden_size, self.num_layers)
+        self.recurrent = torch.nn.LSTM(input_size, self.hidden_size, self.num_layers)
         # self.recurrent = torch.nn.RNN(input_size, self.hidden_size, self.num_layers)
 
         self.linear = torch.nn.Linear(self.hidden_size, output_size)
@@ -58,8 +58,8 @@ class Poker_Model(nn.Module):
         (iv) Pass through the linear output layer
         """
         # x1 = self.embedding(seq)
-        # output, (self.hidden, self.cell) = self.recurrent(seq.unsqueeze(0), (self.hidden, self.cell)) #layers are the values of the hidden and cell states
-        output, (self.hidden) = self.recurrent(seq.unsqueeze(0), (self.hidden)) #layers are the values of the hidden and cell states
+        output, (self.hidden, self.cell) = self.recurrent(seq.unsqueeze(0), (self.hidden, self.cell)) #layers are the values of the hidden and cell states
+        # output, (self.hidden) = self.recurrent(seq.unsqueeze(0), (self.hidden)) #layers are the values of the hidden and cell states
         x3 = self.dropout(output)
         return self.linear(x3.squeeze())
 

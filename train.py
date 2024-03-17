@@ -27,11 +27,13 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
 
     # Lists to store training and validation losses over the epochs
     train_losses, validation_losses = [], []
+    train_accs, validation_accs = [], []
 
     # Training over epochs
     for epoch in range(N_EPOCHS):
         # TRAIN: Train model over training data
         avg_loss_per_sequence = 0
+        total_accuracy = 0
         for i in range(round(len(data)*DATA_P)):
             model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
             model.zero_grad()   # Zero out the gradient
@@ -54,14 +56,11 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                 output_card = model.forward(inp)
                 output.append(output_card) 
                 seq_loss += loss(output_card, tar)
-                tar_c_1, tar_c_2 = torch.argmax(tar[:52]), torch.argmax(tar[52:])
-                card_c_1, card_c_2 = torch.argmax(output_card[:52]), torch.argmax(output_card[52:])
-                
             seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
             optimizer.step() # optimizer
             scheduler.step()
+            total_accuracy += accuracy(output[-1], tar)
             avg_loss_per_sequence += seq_loss.item()/len(seq) 
-
 
             # Display progress
             msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data)*DATA_P)*100, i, seq_loss.item()/len(seq))
@@ -70,13 +69,15 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
 
         # TODO: Append the avg loss on the training dataset to train_losses list
         train_losses.append(avg_loss_per_sequence/round(len(data)*DATA_P))
+        train_accs.append(total_accuracy / round(len(data)*DATA_P))
 
-        print("\nepoch avg loss: ", train_losses[-1])
+        print(f'\nEpoch Average Loss: {train_losses[-1]:.4}, Epoch Average Accuracy: {train_accs[-1]:.4}')
         
         # VAL: Evaluate Model on Validation dataset
         model.eval() # Put in eval mode (disables batchnorm/dropout) !
         with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
             avg_loss_per_sequence = 0
+            total_accuracy = 0
             # Iterate over validation data
             for i in range(round(len(data_val)*DATA_P)):
                 model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
@@ -97,6 +98,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                     output = model.forward(inp)
                     seq_loss += loss(output, tar)
 
+                total_accuracy += accuracy(output, tar)
                 avg_loss_per_sequence += seq_loss.item()/len(seq)
 
                 # Display progress
@@ -106,8 +108,9 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
         
         # TODO: Append the avg loss on the validation dataset to validation_losses list
         validation_losses.append(avg_loss_per_sequence/round(len(data_val)*DATA_P))
+        validation_accs.append(total_accuracy / round(len(data)*DATA_P))
 
-        print("\nval avg loss: ", validation_losses[-1])
+        print(f'\nVal Average Loss: {validation_losses[-1]:.4}, Val Average Accuracy: {validation_accs[-1]:.4}')
 
         model.train() #TURNING THE TRAIN MODE BACK ON !
         
@@ -123,5 +126,4 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                 'optimizer_state_dict': optimizer.state_dict(),
                 }, './checkpoint/' + CHECKPOINT + '.t%s' % epoch)
 
-    return train_losses, validation_losses
-
+    return train_losses, validation_losses, train_accs, validation_accs

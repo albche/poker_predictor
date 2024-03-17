@@ -4,6 +4,7 @@ import torch
 import json
 from sklearn.preprocessing import OneHotEncoder
 from tqdm.auto import tqdm
+import glob
 
 READ_FILE = 'hands_valid.json'
 
@@ -169,6 +170,39 @@ def extract_data(read_file='hands_valid.json', full_ohe=True, two_only=True, num
         print(f'Writing data to files: Batch {counter}')
         torch.save(data_list, os.path.join(out_path, f'input_data_{counter:03}.pt'))
         torch.save(target_list, os.path.join(out_path, f'target_data_{counter:03}.pt'))
+
+
+# def normalize_cash(root, hardcoded_indices=[260, 285, 286, 287, 288, 289, 290]):
+#     fns = glob.glob(f'{root}/*/*.pt')
+#     vals = [[] for x in hardcoded_indices]
+
+#     print('Extracting Data to Compute Mean, Std')
+#     for fn in tqdm(fns[:5]):
+#         tensor_list = torch.load(fn)
+#         for tensor in tensor_list:
+#             flipped = torch.transpose(tensor,0,1)
+#             relevant_rows = flipped[hardcoded_indices]
+#             for i,x in enumerate(relevant_rows):
+#                 vals[i] += x.tolist()
+
+#     means = [np.mean(inner_list) for inner_list in vals]
+#     stds = [np.std(inner_list) for inner_list in vals]
+
+#     print('Looping Again to Normalize Inputs')
+#     for fn in tqdm(fns[:5]):
+#         tensor_list = torch.load(fn)
+#         write_list = []
+#         write_fn = '/'.join([fn.split('/')[0]] + ['normalized'] + fn.split('/')[1:])
+#         if not os.path.exists('/'.join(write_fn.split('/')[:-1])):
+#             os.makedirs('/'.join(write_fn.split('/')[:-1]))
+#         for tensor in tensor_list:
+#             flipped = torch.transpose(tensor,0,1)
+#             for i, row in enumerate(hardcoded_indices):
+#                 flipped[row] = (flipped[row] - means[i]) / (stds[i])
+#             write_list.append(torch.transpose(flipped, 0, 1))
+#         torch.save(write_list, write_fn)
+    
+
 
 # Run the function
 # extract_data(full_ohe=True)

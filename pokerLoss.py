@@ -41,6 +41,14 @@ class fourLoss(nn.Module):
 
         #     return min(loss1/4, loss2/4)
     
+def accuracy(y, t):
+    yc1, yc2 = torch.argmax(y[:52]), torch.argmax(y[52:])
+    tc1, tc2 = torch.argmax(t[:52]), torch.argmax(t[52:])
+    accuracy_1 = int((yc1 == tc1) and (yc2 == tc2))
+    accuracy_2 = int((yc1 == tc2) and (yc2 == tc1))
+    return max(accuracy_1, accuracy_2)
+
+    
 #testing
 
 # s1 = [0, 0.5, 0.5, 0]
