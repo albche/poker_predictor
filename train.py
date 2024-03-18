@@ -8,6 +8,9 @@ import os
 # - work out the Loss class with a string input that gives the type of loss being used
 
 def train(model, data, data_val, targets, targets_val, config, device, loss_type="loss 1"):
+    # print(model.parameters().shape)
+    print(sum(p.numel() for p in model.parameters()))
+
     # Extracting configuration parameters
     N_EPOCHS = 20
     LR = 0.001
@@ -20,7 +23,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     model = model.to(device) # TODO: Move model to the specified device
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
 
     loss = fourLoss(loss_type) # TODO: Initialize loss function
     # loss = torch.nn.CrossEntropyLoss()
@@ -58,7 +61,7 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
                 seq_loss += loss(output_card, tar)
             seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
             optimizer.step() # optimizer
-            scheduler.step()
+            # scheduler.step()
             total_accuracy += accuracy(output[-1], tar)
             avg_loss_per_sequence += seq_loss.item()/len(seq) 
 

@@ -129,10 +129,13 @@ def extract_data(read_file='hands_valid.json', full_ohe=True, two_only=True, num
                 money_features = np.array([data['players'][player][feature] for feature in ['bankroll', 'action', 'winnings'] 
                                         for player in [0,1]]).reshape(6, 1).T
 
-                encoded_p1_pocket = encode_hand(data['players'][0]['pocket_cards'], full_ohe=full_ohe).flatten().reshape(1,-1)
-                repeated_p1_pocket = np.repeat(encoded_p1_pocket, num_rounds, axis=0)
-                encoded_p2_pocket = encode_hand(data['players'][1]['pocket_cards'], full_ohe=full_ohe).flatten().reshape(1,-1)
-                repeated_p2_pocket = np.repeat(encoded_p2_pocket, num_rounds, axis=0)
+                encoded_p1_pocket_num = partial_encode_hand(data['players'][0]['pocket_cards']).flatten().reshape(1,-1)
+                repeated_p1_pocket_num = np.repeat(encoded_p1_pocket_num, num_rounds, axis=0)
+                encoded_p2_pocket_num = partial_encode_hand(data['players'][1]['pocket_cards']).flatten().reshape(1,-1)
+                repeated_p2_pocket_num = np.repeat(encoded_p2_pocket_num, num_rounds, axis=0)
+
+                encoded_p1_pocket_oh = encode_hand(data['players'][0]['pocket_cards']).flatten().reshape(1,-1)
+                encoded_p2_pocket_oh = encode_hand(data['players'][1]['pocket_cards']).flatten().reshape(1,-1)
 
                 money_features = np.repeat(money_features, num_rounds, axis=0)
 
@@ -140,11 +143,11 @@ def extract_data(read_file='hands_valid.json', full_ohe=True, two_only=True, num
                 pots = (rounds @ pots).reshape(-1,1) # extends this to be one per "turn" instead of once per round
 
                 data_list.append(torch.from_numpy(np.concatenate((encoded_board, pots, rounds, p1_actions, p2_actions, money_features,
-                                            repeated_p1_pocket), axis=1)))
+                                            repeated_p1_pocket_num), axis=1)))
                 data_list.append(torch.from_numpy(np.concatenate((encoded_board, pots, rounds, p1_actions, p2_actions, money_features,
-                                            repeated_p2_pocket), axis=1)))
-                target_list.append(torch.from_numpy(encoded_p2_pocket))
-                target_list.append(torch.from_numpy(encoded_p1_pocket))
+                                            repeated_p2_pocket_num), axis=1)))
+                target_list.append(torch.from_numpy(encoded_p2_pocket_oh))
+                target_list.append(torch.from_numpy(encoded_p1_pocket_oh))
 
             if(counter <= 100):
                 dataset = 'training'
@@ -205,4 +208,4 @@ def extract_data(read_file='hands_valid.json', full_ohe=True, two_only=True, num
 
 
 # Run the function
-# extract_data(full_ohe=True)
+extract_data(full_ohe=False)

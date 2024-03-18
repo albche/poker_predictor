@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import numpy as np
 
 class Poker_Model(nn.Module):
     def __init__(self, input_size, output_size):
@@ -10,18 +11,17 @@ class Poker_Model(nn.Module):
         super(Poker_Model, self).__init__()
 
         self.input_size = input_size
-        self.hidden_size = output_size*3
+        self.hidden_size = 10
         self.output_size = output_size
-        self.num_layers = 3
+        self.num_layers = 1
         self.dropout = 0.1
         self.hidden = None
-        # self.cell = None
-        
-        # self.recurrent = torch.nn.LSTM(input_size, self.hidden_size, self.num_layers)
-        self.recurrent = torch.nn.GRU(input_size, self.hidden_size, self.num_layers)
-        # self.recurrent = torch.nn.RNN(input_size, self.hidden_size, self.num_layers)
+
+        self.recurrent = torch.nn.RNN(input_size, self.hidden_size, self.num_layers)
+        self.relu = torch.nn.ReLU()
 
         self.linear = torch.nn.Linear(self.hidden_size, output_size)
+        print("linear params", sum(p.numel() for p in self.linear.parameters()))
         self.dropout = torch.nn.Dropout(self.dropout)
 
 

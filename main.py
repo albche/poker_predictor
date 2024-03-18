@@ -35,10 +35,10 @@ if __name__ == "__main__":
     print('==> Building model..')
 
     # 17 spaces for each card, max of 5 cards
-    num_board_features = 52*5
+    num_board_features = 10
 
     # 17 spaces for each card, max of 2 cards
-    pocket_cards = 52*2
+    pocket_cards = 4
 
     # pre-flop, flop, turn, river
     num_rounds = 4
@@ -63,12 +63,13 @@ if __name__ == "__main__":
         (num_actions * num_players) + 
         (money_per_player * num_players)
     )
+    print("in size", in_size)
     out_size = 104 # number of predictions i think?
     model = Poker_Model(in_size, out_size)
 
     data_p = 0.05 #percentage of data loaded because running everything takes too long (min, max) = (0.05, 1.0)
-    data, targets = load_data(p=data_p)
-    data_val, targets_val = load_data(mode='validation', p=data_p)
+    data, targets = load_data(p=data_p, encodings="partial_encoded")
+    data_val, targets_val = load_data(mode='validation', p=data_p, encodings="partial_encoded")
 
     # If evaluating model only and trained model path is provided:
     if(evaluate_model_only and model_path != ""):
