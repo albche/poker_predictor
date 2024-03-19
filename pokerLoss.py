@@ -11,9 +11,13 @@ class fourLoss(nn.Module):
         y: model generated output shape: (104) i.e. [card1 + card2] where each element is one_hot values
         t: target value shape: (104) i.e. [card1 + card2] where each element is one_hot values
         '''
-        ce = nn.CrossEntropyLoss()
-        yc1, yc2 = y[:52], y[52:]
-        tc1, tc2 = t[:52], t[52:]
+        y = y.type(torch.float)
+        t = t.type(torch.long)
+        ce = nn.NLLLoss()
+
+        yc1, yc2 = y[:len(y)//2], y[len(y)//2:]
+        tc1, tc2 = t[:len(y)//2], t[len(y)//2:]
+        
         loss1 = (ce(yc1, tc1) +  ce(yc2, tc2))/2
         loss2 = (ce(yc2, tc1) +  ce(yc1, tc2))/2
 
@@ -38,36 +42,10 @@ class fourLoss(nn.Module):
 
         #     return min(loss1/4, loss2/4)
     
-def accuracy(y, t):
-    yc1, yc2 = torch.argmax(y[:52]), torch.argmax(y[52:])
+def accuracy(y, t, k=10):
+    yc1, yc2 = torch.topk(y[:52], k)[1], torch.topk(y[52:], k)[1]
     tc1, tc2 = torch.argmax(t[:52]), torch.argmax(t[52:])
-    accuracy_1 = int((yc1 == tc1) and (yc2 == tc2))
-    accuracy_2 = int((yc1 == tc2) and (yc2 == tc1))
+    accuracy_1 = int((tc1 in yc1) and (tc2 in yc2))
+    accuracy_2 = int((tc1 in yc2) and (tc2 in yc1))
     return max(accuracy_1, accuracy_2)
-
-    
-#testing
-
-# s1 = [0, 0.5, 0.5, 0]
-# s2 = [0, 0, 1, 0]
-# s_T1 = [0, 1, 0, 0]
-# s_T2 = [0, 0, 1, 0]
-
-# r1 = [0, 0, 0, 0.8, 0, 0.2, 0, 0, 0, 0, 0, 0, 0]
-# r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
-# r_T1 = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# r_T2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
-
-# y = torch.as_tensor(r1+s1+r2+s2).type(torch.float32)
-# t = torch.as_tensor(r_T1+s_T1+r_T2+s_T2).type(torch.float32)
-
-# ce = torch.nn.CrossEntropyLoss()
-# loss = ce(t, s_T1)
-# print(loss)
-# loss.backward()
-
-# loss = fourLoss(y, t)
-# print(loss)
-# print(loss.item())
-# loss.backward()
 

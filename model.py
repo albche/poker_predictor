@@ -11,14 +11,14 @@ class Poker_Model(nn.Module):
         super(Poker_Model, self).__init__()
 
         self.input_size = input_size
-        self.hidden_size = 10
+        self.hidden_size = 150
         self.output_size = output_size
-        self.num_layers = 1
+        self.num_layers = 2
         self.dropout = 0.1
         self.hidden = None
 
         self.recurrent = torch.nn.RNN(input_size, self.hidden_size, self.num_layers)
-        self.relu = torch.nn.ReLU()
+        self.sigmoid = torch.nn.LogSigmoid()
 
         self.linear = torch.nn.Linear(self.hidden_size, output_size)
         print("linear params", sum(p.numel() for p in self.linear.parameters()))
@@ -62,5 +62,6 @@ class Poker_Model(nn.Module):
         output, (self.hidden) = self.recurrent(seq.unsqueeze(0), (self.hidden)) #layers are the values of the hidden and cell states
         x = self.dropout(output)
         x = self.linear(x.squeeze())
+        x = self.sigmoid(x)
         return x
 
