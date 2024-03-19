@@ -2,32 +2,30 @@ import glob
 import numpy as np
 import torch
 from tqdm.auto import tqdm
+import os
 
-def load_data(encodings='fully_encoded', mode='training', p=1.0):
-    input_glob, target_glob = f'data/{encodings}/{mode}/input*.pt', f'data/{encodings}/{mode}/target*.pt'
+def load_batches(batch_size):
+    print('Batching...')
+    return_tuple = []
+    for data_group in ('training', 'validation', 'testing'):
+        print(f'Loading data for {data_group} dataset')
+        glob_path = os.path.join('data', data_group, '*.pt')
+        all_data = []
+        print('Reading in raw .pt data...')
+        for fn in tqdm(glob.glob(glob_path)[:1]):
+            all_data += (torch.load(fn))
+        random_indices = np.random.permutation(range(len(all_data)))
 
-    assert(p >= 0.05 and p <= 1.0) #smallest value allowed for p is 0.05 since validation doesn't have enough data to support less
-
-    input_fns = np.sort(glob.glob(input_glob))
-    target_fns = np.sort(glob.glob(target_glob))
-    indices = torch.randperm(len(input_fns))[:round(len(input_fns)*p)]
-    input_fns = input_fns[:round(len(input_fns)*p)]
-    target_fns = target_fns[:round(len(target_fns)*p)]
-
-    #in case theres only one element and it becomes a string
-    if type(input_fns) == np.str_: 
-        input_fns = np.array([input_fns])
-    if type(target_fns) == np.str_: 
-        target_fns = np.array([target_fns])
-
-    all_inputs = []
-    all_targets = []
-
-    print(f'Loading {mode} Inputs...')
-    for fn in tqdm(input_fns):
-        all_inputs += torch.load(fn)
-    print(f'Loading {mode} Targets...')
-    for fn in tqdm(target_fns):
-        all_targets += torch.load(fn)
-    
-    return all_inputs, all_targets
+        input_batches = []
+        target_batches = []
+        print('Batching...')
+        for i in tqdm(range(0, len(all_data), batch_size)):
+            end_index = min((i+batch_size), len(all_data))
+            batched_inputs = [torch.transpose(all_data[random_indices[j]][0], 0, 1) for j in range(i, end_index)]
+            batched_targets = [all_data[random_indices[j]][1] for j in range(i, end_index)]
+            input_batches.append(torch.stack(batched_inputs, dim=0))
+            target_batches.append(torch.stack(batched_targets, dim=0))
+        return_tuple.append(input_batches)
+        return_tuple.append(target_batches)
+    print('\n')
+    return tuple(return_tuple)

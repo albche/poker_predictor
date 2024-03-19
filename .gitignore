@@ -1,5 +1,7 @@
 data/*
 outputs/*
 hands_valid.json
+hands_filtered.json
 test_notebook.ipynb
 analysis.ipynb
+util.py

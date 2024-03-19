@@ -11,12 +11,15 @@ class fourLoss(nn.Module):
         y: model generated output shape: (104) i.e. [card1 + card2] where each element is one_hot values
         t: target value shape: (104) i.e. [card1 + card2] where each element is one_hot values
         '''
-        y = y.type(torch.float)
-        t = t.type(torch.long)
-        ce = nn.NLLLoss()
+        ce = nn.BCELoss()
 
-        yc1, yc2 = y[:len(y)//2], y[len(y)//2:]
-        tc1, tc2 = t[:len(y)//2], t[len(y)//2:]
+        yc1, yc2 = y[:, :len(y)//2], y[:, len(y)//2:]
+        tc1, tc2 = t[:, :len(y)//2], t[:, len(y)//2:]
+
+        print(yc1.shape)
+        print(yc2.shape)
+        print(tc1.shape)
+        print(tc2.shape)
         
         loss1 = (ce(yc1, tc1) +  ce(yc2, tc2))/2
         loss2 = (ce(yc2, tc1) +  ce(yc1, tc2))/2

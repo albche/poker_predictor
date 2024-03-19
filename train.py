@@ -21,12 +21,9 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     DATA_P = 0.1
 
     model = model.to(device) # TODO: Move model to the specified device
-
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
-
     loss = fourLoss(loss_type) # TODO: Initialize loss function
-    # loss = torch.nn.CrossEntropyLoss()
 
     # Lists to store training and validation losses over the epochs
     train_losses, validation_losses = [], []
@@ -35,35 +32,24 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     # Training over epochs
     for epoch in range(N_EPOCHS):
         # TRAIN: Train model over training data
+        model.train()
         avg_loss_per_sequence = 0
         total_accuracy = 0
-        for i in range(round(len(data)*DATA_P)):
-            model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
+        for i, (input, target) in enumerate(zip(data, targets)):
+            model.init_hidden(input.shape[0], device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
             model.zero_grad()   # Zero out the gradient
-
-            seq = torch.t(data[i]).t().float() # Needs a transpose. float() turns float64 -> float32, which we need
-            target = targets[i].view(104).float() # Fixing dimensionality with view (maybe get rid of magic num. l8r)
-            seq = seq.to(device)
-            target = target.to(device)
+            input, target = input.float().to(device), target.float().to(device)
 
             seq_loss = 0
-            output = []
-            for c in range(seq.shape[0]): # For each column...
-                if device == "cuda":
-                    inp = seq[c].cuda()
-                    tar = target.cuda()
-                else:
-                    inp = seq[c]
-                    tar = target
-
-                output_card = model.forward(inp)
-                output.append(output_card) 
-                seq_loss += loss(output_card, tar)
+            out = None
+            for t in range(input.shape[1]):
+                out = model(input[:,t,:].reshape(input.shape[0], 1, input.shape[2]))
+                seq_loss += loss(out.view(out.shape[0], out.shape[2]), target)
             seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
             optimizer.step() # optimizer
             # scheduler.step()
-            total_accuracy += accuracy(output[-1], tar)
-            avg_loss_per_sequence += seq_loss.item()/len(seq) 
+            # total_accuracy += accuracy(out.view(out.shape[0], out.shape[2]), target)
+            avg_loss_per_sequence += seq_loss.item()/input.shape[1] 
 
             # Display progress
             msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data)*DATA_P)*100, i, seq_loss.item()/len(seq))
@@ -71,11 +57,13 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
             sys.stdout.flush()
 
         # TODO: Append the avg loss on the training dataset to train_losses list
-        train_losses.append(avg_loss_per_sequence/round(len(data)*DATA_P))
-        train_accs.append(total_accuracy / round(len(data)*DATA_P))
+        train_losses.append(avg_loss_per_sequence/len(data))
+        train_accs.append(total_accuracy / len(data))
 
         print(f'\nEpoch Average Loss: {train_losses[-1]:.4}, Epoch Average Accuracy: {train_accs[-1]:.4}')
         
+        assert(AssertionError)
+
         # VAL: Evaluate Model on Validation dataset
         model.eval() # Put in eval mode (disables batchnorm/dropout) !
         with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
