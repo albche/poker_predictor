@@ -6,7 +6,7 @@ import gc
 from model import Poker_Model
 from util import *
 from train import train
-from dataloader import load_data
+from dataloader import load_batches
 
 # TODO determine which device to use (cuda or cpu)
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,16 +60,14 @@ if __name__ == "__main__":
         (pocket_cards) + 
         (pot) + 
         (num_rounds) + 
-        (num_actions * num_players) + 
+        (num_actions) + 
         (money_per_player * num_players)
     )
     print("in size", in_size)
     out_size = 104 # number of predictions i think?
     model = Poker_Model(in_size, out_size)
 
-    data_p = 0.05 #percentage of data loaded because running everything takes too long (min, max) = (0.05, 1.0)
-    data, targets = load_data(p=data_p, encodings="partial_encoded")
-    data_val, targets_val = load_data(mode='validation', p=data_p, encodings="partial_encoded")
+    data_train, targets_train, data_val, targets_val, data_test, targets_test = load_batches(batch_size=128)
 
     # If evaluating model only and trained model path is provided:
     if(evaluate_model_only and model_path != ""):
@@ -80,7 +78,7 @@ if __name__ == "__main__":
         print('==> Model loaded from checkpoint..')
     else:
         # Train the model and get the training and validation losses
-        losses, v_losses, accs, v_accs = train(model, data, data_val, targets, targets_val, config, device)
+        losses, v_losses, accs, v_accs = train(model, data_train, data_val, targets_train, targets_val, config, device)
 
         # Plot the training and validation losses
         plot_losses(losses, v_losses)

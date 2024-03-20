@@ -18,12 +18,12 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
     HIDDEN_SIZE = 50
     DROPOUT_P = 0.2
     CHECKPOINT = 'ckpt_ep_{}_hsize_{}_dout_{}'.format(N_EPOCHS, HIDDEN_SIZE, DROPOUT_P)
-    DATA_P = 0.1
+    DATA_P = 0.01
 
     model = model.to(device) # TODO: Move model to the specified device
 
     optimizer = torch.optim.AdamW(params=model.parameters(), lr=LR) # TODO: Initialize optimizer
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(data))
 
     loss = fourLoss(loss_type) # TODO: Initialize loss function
     # loss = torch.nn.CrossEntropyLoss()
@@ -37,36 +37,24 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
         # TRAIN: Train model over training data
         avg_loss_per_sequence = 0
         total_accuracy = 0
-        for i in range(round(len(data)*DATA_P)):
-            model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
+        for i, (input, target) in enumerate(zip(data[:round(len(data)*DATA_P)], targets[:round(len(targets)*DATA_P)])):
+            model.init_hidden(input.shape[0], device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
             model.zero_grad()   # Zero out the gradient
-
-            seq = torch.t(data[i]).t().float() # Needs a transpose. float() turns float64 -> float32, which we need
-            target = targets[i].view(104).float() # Fixing dimensionality with view (maybe get rid of magic num. l8r)
-            seq = seq.to(device)
-            target = target.to(device)
+            input, target = input.float().to(device), target.float().to(device)
 
             seq_loss = 0
-            output = []
-            for c in range(seq.shape[0]): # For each column...
-                if device == "cuda":
-                    inp = seq[c].cuda()
-                    tar = target.cuda()
-                else:
-                    inp = seq[c]
-                    tar = target
-
-                output_card = model.forward(inp)
-                output.append(output_card) 
-                seq_loss += loss(output_card, tar)
+            out = None
+            for t in range(input.shape[1]):
+                out = model(input[:,t,:].reshape(input.shape[0], 1, input.shape[2]))
+                seq_loss += loss(out.view(out.shape[0], out.shape[2]), target)
             seq_loss.backward() # Backprop the total losses across each timestep (maybe we only do the last?)
             optimizer.step() # optimizer
-            # scheduler.step()
-            total_accuracy += accuracy(output[-1], tar)
-            avg_loss_per_sequence += seq_loss.item()/len(seq) 
+            scheduler.step()
+            total_accuracy += accuracy(out.view(out.shape[0], out.shape[2]), target)
+            avg_loss_per_sequence += seq_loss.item()/input.shape[1] 
 
             # Display progress
-            msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data)*DATA_P)*100, i, seq_loss.item()/len(seq))
+            msg = '\rTraining Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data)*DATA_P)*100, i, seq_loss.item()/input.shape[1])
             sys.stdout.write(msg)
             sys.stdout.flush()
 
@@ -82,30 +70,21 @@ def train(model, data, data_val, targets, targets_val, config, device, loss_type
             avg_loss_per_sequence = 0
             total_accuracy = 0
             # Iterate over validation data
-            for i in range(round(len(data_val)*DATA_P)):
-                model.init_hidden(device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
-
-                seq = torch.t(data_val[i]).t().float()
-                target = targets_val[i].view(104).float()
-                seq.to(device)
-                target.to(device)
+            for i, (input, target) in enumerate(zip(data_val[:round(len(data_val)*DATA_P)], targets_val[:round(len(targets_val)*DATA_P)])):
+                model.init_hidden(input.shape[0], device) # Zero out the hidden layer (When you start a new song, the hidden layer state should start at all 0’s.)
+                input, target = input.float().to(device), target.float().to(device)
 
                 seq_loss = 0
-                for c in range(len(seq)):
-                    if device == "cuda":
-                        inp = seq[c].cuda()
-                        tar = target.cuda()
-                    else:
-                        inp = seq[c]
-                        tar = target
-                    output = model.forward(inp)
-                    seq_loss += loss(output, tar)
+                out = None
+                for t in range(input.shape[1]):
+                    out = model(input[:,t,:].reshape(input.shape[0], 1, input.shape[2]))
+                    seq_loss += loss(out.view(out.shape[0], out.shape[2]), target)
 
-                total_accuracy += accuracy(output, tar)
-                avg_loss_per_sequence += seq_loss.item()/len(seq)
+                total_accuracy += accuracy(out.view(out.shape[0], out.shape[2]), target)
+                avg_loss_per_sequence += seq_loss.item()/input.shape[1] 
 
                 # Display progress
-                msg = '\rValidation Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data_val)*DATA_P)*100, i, seq_loss.item()/len(seq))
+                msg = '\rValidation Epoch: {}, {:.2f}% iter: {} Loss: {:.4}'.format(epoch, (i+1)/round(len(data_val)*DATA_P)*100, i, seq_loss.item()/input.shape[1])
                 sys.stdout.write(msg)
                 sys.stdout.flush()
         

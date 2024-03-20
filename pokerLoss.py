@@ -13,13 +13,18 @@ class fourLoss(nn.Module):
         '''
         y = y.type(torch.float)
         t = t.type(torch.long)
+
         ce = nn.NLLLoss()
 
-        yc1, yc2 = y[:len(y)//2], y[len(y)//2:]
-        tc1, tc2 = t[:len(y)//2], t[len(y)//2:]
+        yc1, yc2 = y[:, :52], y[:, 52:]
+        tc1, tc2 = t[:, :52], t[:, 52:]
         
-        loss1 = (ce(yc1, tc1) +  ce(yc2, tc2))/2
-        loss2 = (ce(yc2, tc1) +  ce(yc1, tc2))/2
+        loss1, loss2 = 0, 0
+        for b in range(len(yc1)):
+            loss1 += (ce(yc1[b], tc1[b]) +  ce(yc2[b], tc2[b]))/2
+            loss2 += (ce(yc2[b], tc1[b]) +  ce(yc1[b], tc2[b]))/2
+        # loss1 = (ce(yc1, tc1) +  ce(yc2, tc2))/2
+        # loss2 = (ce(yc2, tc1) +  ce(yc1, tc2))/2
 
         return min(loss1, loss2)
 
@@ -43,9 +48,14 @@ class fourLoss(nn.Module):
         #     return min(loss1/4, loss2/4)
     
 def accuracy(y, t, k=10):
-    yc1, yc2 = torch.topk(y[:52], k)[1], torch.topk(y[52:], k)[1]
-    tc1, tc2 = torch.argmax(t[:52]), torch.argmax(t[52:])
-    accuracy_1 = int((tc1 in yc1) and (tc2 in yc2))
-    accuracy_2 = int((tc1 in yc2) and (tc2 in yc1))
-    return max(accuracy_1, accuracy_2)
+    y1, y2 = y[:, :52], y[:, 52:]
+    t1, t2 = t[:, :52], t[:, 52:]
+
+    accuracy_1, accuracy_2 = 0, 0
+    for b in range(len(y1)):
+        yc1, yc2 = torch.topk(y1[b], k)[1], torch.topk(y2[b], k)[1]
+        tc1, tc2 = torch.argmax(t1[b]), torch.argmax(t2[b])
+        accuracy_1 += int((tc1 in yc1) and (tc2 in yc2))
+        accuracy_2 += int((tc1 in yc2) and (tc2 in yc1))
+    return max(accuracy_1/len(y), accuracy_2/len(y))
 
