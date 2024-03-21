@@ -1,5 +1,4 @@
-data/partial_encoded
-data/fully_encoded
+data/*
 outputs/*
 hands_valid.json
 hands_filtered.json
