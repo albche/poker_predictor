@@ -58,25 +58,3 @@ def accuracy(y, t, k=10):
         accuracy_1 += int((tc1 in yc1) and (tc2 in yc2))
         accuracy_2 += int((tc1 in yc2) and (tc2 in yc1))
     return max(accuracy_1/len(y), accuracy_2/len(y))
-
-# hand: ['Ad','Kc']
-def format_poker_hand(hand):
-    # card ranks ordered from low to high
-    card_order = '23456789TJQKA'
-    
-    # extract ranks and suits from the input
-    rank1, suit1 = hand[0][0], hand[0][1]
-    rank2, suit2 = hand[1][0], hand[1][1]
-    
-    # ensure the higher card rank is on the left side
-    if card_order.index(rank1) > card_order.index(rank2):
-        rank1, rank2 = rank2, rank1
-        suit1, suit2 = suit2, suit1
-    
-    # check for pocket pairs, offsuit, or suited
-    if rank1 == rank2:
-        return f'{rank1}{rank2}'
-    elif suit1 == suit2:
-        return f'{rank1}{rank2}s'
-    else:
-        return f'{rank1}{rank2}o'
