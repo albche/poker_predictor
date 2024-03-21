@@ -58,3 +58,21 @@ def accuracy(y, t, k=10):
         accuracy_1 += int((tc1 in yc1) and (tc2 in yc2))
         accuracy_2 += int((tc1 in yc2) and (tc2 in yc1))
     return max(accuracy_1/len(y), accuracy_2/len(y))
+
+    # y1, y2 = y[:, :52], y[:, 52:]
+    # t1, t2 = t[:, :52], t[:, 52:]
+
+    # probabilities = {}
+    # for b in range(len(y1)):
+    #     yc1, yc2 = torch.topk(y1[b], k), torch.topk(y2[b], k)
+    #     for i in range(k):
+    #         probabilities[(yc1[1][i].item(), yc2[1][i].item())] = max(yc1[0][i].item() * yc2[0][i].item(), probabilities[(yc1[1][i].item(), yc2[1][i].item())] if (yc1[1][i].item(), yc2[1][i].item()) in probabilities else 0)
+    
+    # sorted_probs = sorted(probabilities.items(), key=lambda item: item[1], reverse=True)
+    
+    # tc1, tc2 = torch.argmax(t1[b]).item(), torch.argmax(t2[b]).item()
+    # for prob in sorted_probs[:]:
+    #     if prob[0] == (tc1, tc2) or prob[0] == (tc2, tc1):
+    #         return 1
+
+    # return 0
