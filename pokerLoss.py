@@ -58,4 +58,3 @@ def accuracy(y, t, k=10):
         accuracy_1 += int((tc1 in yc1) and (tc2 in yc2))
         accuracy_2 += int((tc1 in yc2) and (tc2 in yc1))
     return max(accuracy_1/len(y), accuracy_2/len(y))
-
